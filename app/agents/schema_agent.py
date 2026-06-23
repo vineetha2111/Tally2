@@ -2,10 +2,9 @@
 
 from app.config.logging import get_logger
 from app.config.settings import Settings, get_settings
-from app.database.schema_repository import SchemaRepository
-from app.database.session import get_session_factory
 from app.schemas.state import GraphState
 from app.services.ollama_service import OllamaService
+from app.services.schema_cache_service import get_schema_cache
 
 logger = get_logger("schema_agent")
 
@@ -47,13 +46,9 @@ class SchemaAgent:
         logger.info("Discovering schema for intent=%s", intent)
 
         try:
-            session_factory = get_session_factory(self._settings)
-            session = session_factory()
-            try:
-                repo = SchemaRepository(session)
-                catalog = repo.build_full_schema_catalog()
-            finally:
-                session.close()
+            # Use cached schema instead of fetching every time
+            schema_cache = get_schema_cache()
+            catalog = schema_cache.get_schema_catalog(self._settings)
 
             prompt = (
                 f"User question: {question}\n"
