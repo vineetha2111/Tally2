@@ -2,9 +2,16 @@
 
 from app.config.config_manager import ConfigManager
 from app.config.logging import get_logger
+
 from app.schemas.state import GraphState
 from app.services.ollama_service import OllamaService
 from app.services.schema_cache_service import SchemaCacheService
+
+from app.config.settings import Settings, get_settings
+from app.schemas.state import GraphState
+from app.services.ollama_service import OllamaService
+from app.services.schema_cache_service import get_schema_cache
+
 
 
 PROMPT_CONFIG = ConfigManager.get_prompt(
@@ -56,9 +63,15 @@ class SchemaAgent:
         )
 
         try:
+
             catalog = (
                 SchemaCacheService.get_catalog()
             )
+
+            # Use cached schema instead of fetching every time
+            schema_cache = get_schema_cache()
+            catalog = schema_cache.get_schema_catalog(self._settings)
+
 
             prompt = (
                 f"User question: {question}\n"
