@@ -1,34 +1,34 @@
-"""Schema discovery agent."""
+"""Query rewrite agent."""
 
 from app.config.config_manager import ConfigManager
 from app.config.logging import get_logger
 from app.schemas.state import GraphState
 from app.services.ollama_service import OllamaService
-from app.services.schema_cache_service import SchemaCacheService
 
 
 PROMPT_CONFIG = ConfigManager.get_prompt(
-    "schema"
+    "query_rewriter"
 )
 
 AGENT_CONFIG = ConfigManager.get_agent_config(
-    "schema"
+    "query_rewriter"
 )
 
 SYSTEM_PROMPT = PROMPT_CONFIG[
     "system_prompt"
 ]
 
+QUESTION_PREVIEW_LENGTH = AGENT_CONFIG[
+    "rewrite"
+]["max_question_preview_length"]
+
 logger = get_logger(
     AGENT_CONFIG["logging"]["logger_name"]
 )
 
 
-class SchemaAgent:
-    """
-    Discovers relevant schema context from the
-    cached schema catalog.
-    """
+class QueryRewriterAgent:
+    """Rewrites user questions into analytics-friendly form."""
 
     def __init__(
         self,
@@ -40,60 +40,45 @@ class SchemaAgent:
         self,
         state: GraphState,
     ) -> GraphState:
-        """
-        Build schema context for SQL generation.
-        """
 
         if state.get("error"):
             return state
 
         question = state["question"]
-        intent = state["intent"]
 
         logger.info(
-            "Discovering schema for intent=%s",
-            intent,
+            "Rewriting query: %s",
+            question[:QUESTION_PREVIEW_LENGTH],
         )
 
         try:
-            catalog = (
-                SchemaCacheService.get_catalog()
-            )
-
-            prompt = (
-                f"User question: {question}\n"
-                f"Business intent: {intent}\n\n"
-                f"Database schema catalog:\n"
-                f"{catalog}"
-            )
-
-            schema_context = (
+            rewritten_question = (
                 self._ollama.invoke(
-                    prompt=prompt,
+                    prompt=f"User question: {question}",
                     system_prompt=SYSTEM_PROMPT,
                 )
+                .strip()
             )
 
             logger.info(
-                "Schema context built (%d chars)",
-                len(schema_context),
+                "Query rewritten successfully"
             )
 
             return {
                 **state,
-                "schema_context": schema_context,
-                "schema_catalog": catalog,
+                "rewritten_question": rewritten_question,
+                "question": rewritten_question,
             }
 
         except Exception as exc:
             logger.error(
-                "Schema discovery failed: %s",
+                "Query rewrite failed: %s",
                 exc,
             )
 
             return {
                 **state,
                 "error": (
-                    f"Schema agent failed: {exc}"
+                    f"Query rewrite failed: {exc}"
                 ),
             }

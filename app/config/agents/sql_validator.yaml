@@ -1,0 +1,5 @@
+logging:
+  logger_name: sql_validator_agent
+
+validation:
+  allow_select_only: true

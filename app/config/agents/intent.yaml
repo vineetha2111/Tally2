@@ -1,0 +1,7 @@
+default_intent: GENERAL
+
+logging:
+  logger_name: intent_agent
+
+classification:
+  max_question_preview_length: 80

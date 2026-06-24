@@ -1,37 +1,18 @@
-from fastapi import FastAPI  
-from pydantic import BaseModel
+from fastapi import FastAPI
 
-from app.agents.orchestrator import AgentOrchestrator
+from app.api.health import router as health_router
+from app.api.query import router as analytics_router
 from app.config.settings import get_settings
 from app.database.session import check_database_connection
 
-app = FastAPI()
-
 settings = get_settings()
+
 check_database_connection(settings)
 
-orchestrator = AgentOrchestrator(settings)
+app = FastAPI(
+title="Analytics API",
+version="1.0.0"
+)
 
-
-class QueryRequest(BaseModel):
-    question: str
-
-
-@app.get("/health")
-def health():
-    return {"status": "healthy"}
-
-
-@app.post("/query")
-def query(request: QueryRequest):
-
-    result = orchestrator.invoke(request.question)
-
-    return {
-        "question": result.question,
-        "intent": result.intent,
-        "sql_query": result.sql_query,
-        "analysis": result.analysis,
-        "summary": result.summary,
-        "error": result.error,
-    }
+app.include_router(health_router)
+app.include_router(analytics_router)

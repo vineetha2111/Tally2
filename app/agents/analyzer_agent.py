@@ -1,29 +1,25 @@
 """Data analysis agent."""
 
+from app.config.config_manager import ConfigManager
 from app.config.logging import get_logger
 from app.schemas.state import GraphState
 from app.services.ollama_service import OllamaService
 from app.services.sql_executor_service import SQLExecutorService
 
-logger = get_logger("analyzer_agent")
 
-ANALYZER_SYSTEM_PROMPT = """You are a senior business data analyst.
-Analyze the query results and provide detailed business insights.
+PROMPT_CONFIG = ConfigManager.load_yaml(
+    "app/config/prompts/analyzer.yaml"
+)
 
-Include where applicable:
-- Key trends and patterns
-- Anomalies or outliers
-- KPIs and metrics with specific numbers
-- Revenue and sales insights
-- Customer insights
-- Inventory insights
-- Financial observations
-- Risks and opportunities
-- Actionable recommendations
+AGENT_CONFIG = ConfigManager.load_yaml(
+    "app/config/agents/analyzer.yaml"
+)
 
-Be specific. Reference actual values from the data.
-Write in clear, professional language suitable for business stakeholders.
-If no data was returned, explain what that means and suggest next steps."""
+SYSTEM_PROMPT = PROMPT_CONFIG["system_prompt"]
+
+logger = get_logger(
+    AGENT_CONFIG["logging"]["logger_name"]
+)
 
 
 class AnalyzerAgent:
@@ -39,6 +35,7 @@ class AnalyzerAgent:
 
     def run(self, state: GraphState) -> GraphState:
         """Analyze query results and update state."""
+
         if state.get("error"):
             return state
 
@@ -46,10 +43,12 @@ class AnalyzerAgent:
         intent = state["intent"]
         df = state["query_results"]
         sql_query = state["sql_query"]
+
         logger.info("Analyzing %d rows", len(df))
 
         try:
             data_preview = self._executor.dataframe_preview(df)
+
             prompt = (
                 f"User question: {question}\n"
                 f"Business intent: {intent}\n"
@@ -57,12 +56,29 @@ class AnalyzerAgent:
                 f"Query results:\n{data_preview}\n\n"
                 f"Provide a detailed business analysis."
             )
+
             analysis = self._ollama.invoke(
                 prompt=prompt,
-                system_prompt=ANALYZER_SYSTEM_PROMPT,
+                system_prompt=SYSTEM_PROMPT,
             )
-            logger.info("Analysis complete (%d chars)", len(analysis))
-            return {**state, "analysis": analysis}
+
+            logger.info(
+                "Analysis complete (%d chars)",
+                len(analysis),
+            )
+
+            return {
+                **state,
+                "analysis": analysis,
+            }
+
         except Exception as exc:
-            logger.error("Analysis failed: %s", exc)
-            return {**state, "error": f"Analyzer agent failed: {exc}"}
+            logger.error(
+                "Analysis failed: %s",
+                exc,
+            )
+
+            return {
+                **state,
+                "error": f"Analyzer agent failed: {exc}",
+            }

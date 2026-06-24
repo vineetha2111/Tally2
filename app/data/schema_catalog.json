@@ -1,0 +1,232 @@
+{
+"tables": {
+"customers": {
+"schema": "public",
+"columns": [
+{
+"name": "customer_id",
+"type": "integer",
+"nullable": false
+},
+{
+"name": "customer_name",
+"type": "character varying",
+"nullable": false
+},
+{
+"name": "city",
+"type": "character varying",
+"nullable": true
+},
+{
+"name": "phone",
+"type": "character varying",
+"nullable": true
+}
+]
+},
+
+
+"customers1": {
+  "schema": "public",
+  "columns": [
+    {
+      "name": "customer_id",
+      "type": "integer",
+      "nullable": false
+    },
+    {
+      "name": "customer_name",
+      "type": "character varying",
+      "nullable": false
+    },
+    {
+      "name": "email",
+      "type": "character varying",
+      "nullable": true
+    },
+    {
+      "name": "phone",
+      "type": "character varying",
+      "nullable": true
+    },
+    {
+      "name": "city",
+      "type": "character varying",
+      "nullable": true
+    },
+    {
+      "name": "state",
+      "type": "character varying",
+      "nullable": true
+    },
+    {
+      "name": "country",
+      "type": "character varying",
+      "nullable": true
+    },
+    {
+      "name": "customer_type",
+      "type": "character varying",
+      "nullable": true
+    },
+    {
+      "name": "created_at",
+      "type": "timestamp",
+      "nullable": true
+    }
+  ]
+},
+
+"inventory": {
+  "schema": "public",
+  "columns": [
+    {
+      "name": "inventory_id",
+      "type": "integer",
+      "nullable": false
+    },
+    {
+      "name": "product_id",
+      "type": "integer",
+      "nullable": false
+    },
+    {
+      "name": "warehouse",
+      "type": "character varying",
+      "nullable": true
+    },
+    {
+      "name": "quantity_on_hand",
+      "type": "integer",
+      "nullable": false
+    },
+    {
+      "name": "reorder_level",
+      "type": "integer",
+      "nullable": true
+    },
+    {
+      "name": "last_updated",
+      "type": "timestamp",
+      "nullable": true
+    }
+  ]
+},
+
+"ledger": {
+  "schema": "public",
+  "columns": [
+    {
+      "name": "Name",
+      "type": "name",
+      "nullable": true
+    },
+    {
+      "name": "Group Name",
+      "type": "name",
+      "nullable": true
+    },
+    {
+      "name": "Ledger - Opening Balance",
+      "type": "double precision",
+      "nullable": true
+    },
+    {
+      "name": "Ledger Opening Balance - Dr/Cr",
+      "type": "char",
+      "nullable": true
+    },
+    {
+      "name": "Bill - Date",
+      "type": "date",
+      "nullable": true
+    }
+  ]
+},
+
+"products": {
+  "schema": "public",
+  "columns": [
+    {
+      "name": "product_id",
+      "type": "integer",
+      "nullable": false
+    },
+    {
+      "name": "product_name",
+      "type": "character varying",
+      "nullable": false
+    },
+    {
+      "name": "category",
+      "type": "character varying",
+      "nullable": true
+    },
+    {
+      "name": "unit_price",
+      "type": "numeric",
+      "nullable": false
+    },
+    {
+      "name": "cost_price",
+      "type": "numeric",
+      "nullable": false
+    },
+    {
+      "name": "sku",
+      "type": "character varying",
+      "nullable": true
+    },
+    {
+      "name": "created_at",
+      "type": "timestamp",
+      "nullable": true
+    }
+  ]
+},
+
+"sales": {
+  "schema": "public",
+  "columns": [
+    {
+      "name": "sale_id",
+      "type": "integer",
+      "nullable": false
+    },
+    {
+      "name": "customer_id",
+      "type": "integer",
+      "nullable": true
+    },
+    {
+      "name": "amount",
+      "type": "numeric",
+      "nullable": true
+    },
+    {
+      "name": "sale_date",
+      "type": "date",
+      "nullable": true
+    }
+  ]
+}
+
+
+},
+
+"relationships": [
+{
+"from_table": "inventory",
+"from_column": "product_id",
+"to_table": "products",
+"to_column": "product_id"
+},
+{
+"from_table": "sales",
+"from_column": "customer_id",
+"to_table": "customers",
+"to_column": "customer_id"
+}
+]
+}

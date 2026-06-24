@@ -1,0 +1,5 @@
+logging:
+  logger_name: sql_generator_agent
+
+sql_generation:
+  sql_preview_length: 120
